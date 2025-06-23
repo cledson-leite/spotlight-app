@@ -1,4 +1,4 @@
-import { mutation } from "./_generated/server";
+import { mutation, MutationCtx, QueryCtx } from "./_generated/server";
 import { v } from "convex/values";
 
 export const createUser = mutation({
@@ -25,4 +25,17 @@ export const createUser = mutation({
       posts: 0
     })
   }
-});
+})
+
+export const getAuthenticatedUser = async (ctx: QueryCtx | MutationCtx) => {
+  const identity = await ctx.auth.getUserIdentity()
+  if (!identity) throw new Error("Não autorizado")
+
+  const currentUser = await ctx.db.query('users')
+    .withIndex( 'by_clerk_id', (q: any) => q.eq('clerkId', identity.subject))
+    .first()
+  
+  if(!currentUser) throw new Error("Usuário não encontrado")
+
+    return currentUser
+}

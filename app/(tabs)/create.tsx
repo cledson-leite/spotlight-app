@@ -1,5 +1,5 @@
 import { COLORS } from '@/constants/theme'
-import { styles } from '@/styles/create-style'
+import { styles } from '@/styles/create.styles'
 import { useUser } from '@clerk/clerk-expo'
 import FontAwesome from '@expo/vector-icons/FontAwesome'
 import { useRouter } from 'expo-router'
