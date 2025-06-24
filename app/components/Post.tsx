@@ -8,6 +8,9 @@ import { useState } from 'react'
 import { useMutation } from 'convex/react'
 import { api } from '@/convex/_generated/api'
 import { Id } from '@/convex/_generated/dataModel'
+import CommentsModal from './CommentsModal'
+import { formatDistanceToNow } from 'date-fns'
+import { ptBR } from 'date-fns/locale'
 
 type PostProps = {
   _id: Id<"posts">;
@@ -28,6 +31,8 @@ type PostProps = {
 export default function Post({post}: {post: PostProps}) {
   const [isLiked, setIsLiked] = useState(post.isLiked)
   const [likesCount, setLikesCount] = useState(post.likes)
+  const [commetsCount, setCommetsCount] = useState(post.comments)
+  const [showComments, setShowComments] = useState(false)
 
   const toogleLike = useMutation(api.post.toggleLike)
 
@@ -77,7 +82,7 @@ export default function Post({post}: {post: PostProps}) {
               size={22} 
               color={isLiked ? COLORS.primary : COLORS.white} />
           </TouchableOpacity>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => setShowComments(true)}>
             <FontAwesome name='comment-o' size={22} color={COLORS.white} />
           </TouchableOpacity>
         </View>
@@ -90,17 +95,24 @@ export default function Post({post}: {post: PostProps}) {
           likesCount > 0 ? `${likesCount} curtidas` : 'Seja o primeiro a curtir'
         }</Text>
           
-          {/* {post.comments > 0  */}
-          {true 
+          {commetsCount > 0 
             ? (<>
-                  <TouchableOpacity>
-                    <Text style={styles.commentsText}>Veja todos {post.comments} comentarios</Text>
+                  <TouchableOpacity onPress={() => setShowComments(true)}>
+                    <Text style={styles.commentsText}>Veja todos {commetsCount} comentarios</Text>
                   </TouchableOpacity>
-                  <Text style={styles.timeAgo}>Há 2 horas</Text>
-                </>)
+                  <Text style={styles.timeAgo}>
+                    {formatDistanceToNow(post._creationTime,{addSuffix: true, locale: ptBR })}
+                  </Text>
+               </>)
             : <Text style={styles.commentsText}>Seja o primeiro a comentar</Text>
-            }
+          }
         </View>
+        <CommentsModal 
+          postId={post._id}
+          visible={showComments}
+          onClose={() => setShowComments(false)}
+          onCommentAdded={() =>  setCommetsCount(prev => prev + 1)}
+        />
     </View>
   )
 }
