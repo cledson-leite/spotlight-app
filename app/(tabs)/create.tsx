@@ -45,6 +45,8 @@ export default function CreateScreen() {
       if(result.status !== 200) throw new Error("Erro ao enviar imagem")
       const storageId = JSON.parse(result.body).storageId
       await createPost({storageId, caption})
+      setSelectedImage(null)
+      setCaption("")
       router.push("/(tabs)/home")
     } catch (error) {
       console.log('Error ao enviar imagem', error)

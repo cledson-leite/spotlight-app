@@ -6,7 +6,6 @@ import { COLORS } from "@/constants/theme";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import NoPostFound from "../components/NoPostFound";
-import Loader from "../components/Loader";
 import Post from "../components/Post";
 import StoriesSaction from "../components/StoriesSaction";
 
@@ -14,9 +13,7 @@ import StoriesSaction from "../components/StoriesSaction";
 export default function Home() {
   const {signOut} = useAuth()
   const posts = useQuery(api.post.getFeedPost)
-
-  if(posts === undefined) return <NoPostFound />
-  if(posts.length === 0) return <Loader />
+  if(!posts || posts.length === 0) return <NoPostFound />
   
   return (
     <View style={styles.container}>

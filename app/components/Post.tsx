@@ -5,12 +5,13 @@ import { Link } from 'expo-router'
 import { Image } from 'expo-image'
 import { COLORS } from '@/constants/theme'
 import { useState } from 'react'
-import { useMutation } from 'convex/react'
+import { useMutation, useQuery } from 'convex/react'
 import { api } from '@/convex/_generated/api'
 import { Id } from '@/convex/_generated/dataModel'
 import CommentsModal from './CommentsModal'
 import { formatDistanceToNow } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
+import { useUser } from '@clerk/clerk-expo'
 
 type PostProps = {
   _id: Id<"posts">;
@@ -30,11 +31,17 @@ type PostProps = {
 
 export default function Post({post}: {post: PostProps}) {
   const [isLiked, setIsLiked] = useState(post.isLiked)
+  const [isBookmarked, setIsBookmarked] = useState(post.isBookmarked)
   const [likesCount, setLikesCount] = useState(post.likes)
   const [commetsCount, setCommetsCount] = useState(post.comments)
   const [showComments, setShowComments] = useState(false)
 
+  const {user} = useUser()
+  const currentUser = useQuery(api.user.getUserByClerkId, user ? {clerkId: user.id} : 'skip')
+
   const toogleLike = useMutation(api.post.toggleLike)
+  const toogleBookmark = useMutation(api.bookmark.toggleBookmark)
+  const deletePost = useMutation(api.post.deletePost)
 
   const handleLike = async () => {
     try {
@@ -43,6 +50,19 @@ export default function Post({post}: {post: PostProps}) {
       setLikesCount( prev => (newLiked ? prev + 1 : prev - 1))
     } catch (error) {
       console.log("Error ao tooglar like", error)
+    }
+  }
+
+  const handleBookmark = async () => {
+    const newBookmarked = await toogleBookmark({postId: post._id})
+    setIsBookmarked(newBookmarked)
+  }
+
+  const handleDelete = async () => {
+    try {
+      await deletePost({postId: post._id})
+    } catch (error) {
+      console.log("Error ao deletar post", error)
     }
   }
   return (
@@ -60,12 +80,19 @@ export default function Post({post}: {post: PostProps}) {
              <Text style={styles.postUsername}>{post.author.userName}</Text>
           </TouchableOpacity>
         </Link>
-        {/* <TouchableOpacity>
-          <FontAwesome name='ellipsis-h' size={20} color={COLORS.white} />
-        </TouchableOpacity> */}
-        <TouchableOpacity>
-          <FontAwesome name='trash-o' size={20} color={COLORS.primary} />
-        </TouchableOpacity>
+        {
+          post.author.id === currentUser?._id 
+          ? (
+              <TouchableOpacity onPress={handleDelete}>
+                <FontAwesome name='trash-o' size={20} color={COLORS.primary} />
+              </TouchableOpacity>
+             )
+            : (
+              <TouchableOpacity>
+                <FontAwesome name='ellipsis-h' size={20} color={COLORS.white} />
+              </TouchableOpacity>
+            )
+        }
       </View>
       <Image 
         style={styles.postImage}
@@ -86,8 +113,8 @@ export default function Post({post}: {post: PostProps}) {
             <FontAwesome name='comment-o' size={22} color={COLORS.white} />
           </TouchableOpacity>
         </View>
-          <TouchableOpacity>
-            <FontAwesome name='bookmark-o' size={22} color={COLORS.white} />
+          <TouchableOpacity onPress={handleBookmark}>
+            <FontAwesome name={`bookmark${isBookmarked ? '' : '-o'}`} size={22} color={COLORS.white} />
           </TouchableOpacity>
         </View>
         <View style={styles.postInfo}>
