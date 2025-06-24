@@ -4,7 +4,7 @@ import { Stack, useRouter, useSegments } from "expo-router"
 import { useEffect } from "react"
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context"
 
-export default function InitialLayout() {
+export default function InitialLayout({onLayout}: {onLayout: () => void}) {
   const  {isLoaded, isSignedIn} = useAuth()
   const segments = useSegments()
   const router = useRouter()
@@ -21,7 +21,7 @@ export default function InitialLayout() {
   if (!isLoaded) return null
   return( 
     <SafeAreaProvider>
-      <SafeAreaView  style={{ flex: 1, backgroundColor: COLORS.background }}>
+      <SafeAreaView  style={{ flex: 1, backgroundColor: COLORS.background }} onLayout={onLayout}>
         <Stack screenOptions={{ headerShown: false }} />
       </SafeAreaView>
   </SafeAreaProvider>
