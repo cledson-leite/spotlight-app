@@ -8,12 +8,14 @@ import { api } from "@/convex/_generated/api";
 import NoPostFound from "../components/NoPostFound";
 import Post from "../components/Post";
 import StoriesSaction from "../components/StoriesSaction";
+import Loader from "../components/Loader";
 
 
-export default function Home() {
+export default function HomeScreen() {
   const {signOut} = useAuth()
   const posts = useQuery(api.post.getFeedPost)
-  if(!posts || posts.length === 0) return <NoPostFound />
+  if(posts === undefined ) return <Loader />
+  if(posts.length === 0) return <NoPostFound />
   
   return (
     <View style={styles.container}>
